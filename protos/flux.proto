@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package flux;
+
+
+service FluxImage {
+  rpc Resize(ResizeRequest) returns (ResizeResponse);
+}
+
+
+message ResizeRequest {
+  bytes image_data = 1;
+  ResizeMetadata metadata = 2;
+}
+
+message ResizeResponse {
+  bytes image_data = 1;
+}
+
+message ResizeMetadata {
+  ImageType image_type = 1;
+  int32 width = 2;
+  int32 height = 3;
+
+  optional ObjectFit object_fit = 4;
+  optional int32 quality = 5;
+  optional string background_color = 6; // hex color (default #000000)
+
+
+}
+
+enum ImageType {
+  WEBP = 0;
+  PNG = 1;
+  JPEG = 2;
+  GIF = 4;
+  AVIF = 5;
+}
+
+
+enum ObjectFit {
+  CONTAIN = 0;
+  COVER = 1;
+  FILL = 2;
+  INSIDE = 3;
+  OUTSIDE = 4;
+}
+
+
