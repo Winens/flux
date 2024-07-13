@@ -1,0 +1,32 @@
+{
+  "name": "flux",
+  "version": "1.0.0",
+  "description": "Flux is a scalabe image processing service with gRPC communiction. Uses sharp(fastest lib with libvips) package.",
+  "main": "src/index.js",
+  "scripts": {
+    "proto": "cd protos && grpc_tools_node_protoc --js_out=import_style=commonjs,binary:../src/fluxpb/ --grpc_out=grpc_js:../src/fluxpb/ flux.proto && cd .."
+  },
+  "keywords": [
+    "flux",
+    "image",
+    "image processing",
+    "sharp",
+    "grpc",
+    "node",
+    "libvips",
+    "vips"
+  ],
+  "author": "Winens",
+  "license": "MIT",
+  "devDependencies": {
+    "grpc-tools": "^1.12.4",
+    "prettier": "^3.3.3"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.10.11",
+    "async": "^3.2.5",
+    "google-protobuf": "^3.21.2",
+    "lodash": "^4.17.21",
+    "sharp": "^0.33.4"
+  }
+}
