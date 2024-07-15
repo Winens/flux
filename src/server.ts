@@ -1,15 +1,16 @@
-const grpc = require("@grpc/grpc-js");
-const fluxpb_grpc = require("./fluxpb/flux_grpc_pb");
+import * as grpc from "@grpc/grpc-js";
+import { FluxImageService, FluxImageServer } from "./fluxpb/flux";
+import resize from "./resize";
 
-const resize = require("./resize");
+const PORT = 50049;
 
-const PORT = 51049;
-
-function main() {
+function startServer() {
   const srv = new grpc.Server();
-  srv.addService(fluxpb_grpc.FluxImageService, {
+
+  const handlers: FluxImageServer = {
     resize,
-  });
+  };
+  srv.addService(FluxImageService, handlers);
 
   srv.bindAsync(
     `0.0.0.0:${PORT}`,
@@ -24,4 +25,4 @@ function main() {
   );
 }
 
-main();
+startServer();

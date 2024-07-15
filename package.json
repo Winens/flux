@@ -1,10 +1,14 @@
 {
   "name": "flux",
   "version": "1.0.0",
-  "description": "Flux is a scalabe image processing service with gRPC communiction. Uses sharp(fastest lib with libvips) package.",
-  "main": "src/index.js",
+  "description": "Flux is a scalable image processing service with gRPC communication. Uses sharp(fastest lib with libvips) package.",
+  "main": "dist/server.js",
   "scripts": {
-    "proto": "cd protos && grpc_tools_node_protoc --js_out=import_style=commonjs,binary:../src/fluxpb/ --grpc_out=grpc_js:../src/fluxpb/ flux.proto && cd .."
+    "proto": "protoc --plugin=$(which protoc-gen-ts_proto) --ts_proto_out=./src/fluxpb --ts_proto_opt=outputServices=grpc-js --ts_proto_opt=esModuleInterop=true -I protos protos/*.proto",
+    "build": "node esbuild.config.js",
+    "dev": "tsx ./src/server.ts",
+    "start": "node dist/server.js",
+    "tsc": "tsc"
   },
   "keywords": [
     "flux",
@@ -19,14 +23,22 @@
   "author": "Winens",
   "license": "MIT",
   "devDependencies": {
+    "@types/color": "^3.0.6",
+    "concurrently": "^8.2.2",
+    "esbuild": "0.23.0",
     "grpc-tools": "^1.12.4",
-    "prettier": "^3.3.3"
+    "nodemon": "^3.1.4",
+    "prettier": "^3.3.3",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.10.11",
     "async": "^3.2.5",
+    "color": "^4.2.3",
     "google-protobuf": "^3.21.2",
     "lodash": "^4.17.21",
+    "protobufjs": "^7.3.2",
     "sharp": "^0.33.4"
   }
 }
