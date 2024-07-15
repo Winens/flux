@@ -4,9 +4,12 @@
   "description": "Flux is a scalable image processing service with gRPC communication. Uses sharp(fastest lib with libvips) package.",
   "main": "dist/server.js",
   "scripts": {
+    "clean": "rm -rf dist && rm -rf src/fluxpb",
     "proto": "protoc --plugin=$(which protoc-gen-ts_proto) --ts_proto_out=./src/fluxpb --ts_proto_opt=outputServices=grpc-js --ts_proto_opt=esModuleInterop=true -I protos protos/*.proto",
-    "build": "node esbuild.config.js",
-    "dev": "tsx ./src/server.ts",
+    "build": "esbuild --bundle --outdir=dist src/server.ts --platform=node --external:sharp --external:@grpc/grpc-js --minify --tsconfig=./tsconfig.json",
+    "dev": "concurrently --names \"BUNDLE,SERVER\" \"pnpm dev:bundle\" \"pnpm dev:server\"",
+    "dev:bundle": "pnpm build --watch",
+    "dev:server": "nodemon --watch dist",
     "start": "node dist/server.js",
     "tsc": "tsc"
   },

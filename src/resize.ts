@@ -30,13 +30,15 @@ const resize: UnaryHandler = async (call, callback) => {
 
     const bgColor = new Color(opts.backgroundColor);
 
+    const fit = objectFitToJSON(
+      opts.objectFit ?? ObjectFit.COVER,
+    ).toLowerCase() as keyof FitEnum;
+
     const img = sharp(Buffer.from(call.request.imageData)).resize({
       width: opts.width,
       height: opts.height,
-      fit: objectFitToJSON(
-        opts.objectFit || ObjectFit.COVER,
-      ).toLowerCase() as keyof FitEnum,
       background: bgColor.object(),
+      fit,
     });
 
     // Result variable
@@ -69,6 +71,7 @@ const resize: UnaryHandler = async (call, callback) => {
 
     callback(null, response);
   } catch (err) {
+    console.log(err);
     callback(err as Error);
   }
 };

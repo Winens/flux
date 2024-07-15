@@ -72,6 +72,7 @@ export function imageTypeToJSON(object: ImageType): string {
   }
 }
 
+/** Reference: https://sharp.pixelplumbing.com/api-resize#resize */
 export enum ObjectFit {
   CONTAIN = 0,
   COVER = 1,
