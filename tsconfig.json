@@ -1,5 +1,11 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@fluxpb/*": [
+        "proto/gen/ts/*"
+      ]
+    },
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */
@@ -112,7 +118,8 @@
     /* Skip type checking all .d.ts files. */
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "proto/gen/ts/**/*.ts"
   ],
   "exclude": [
     "node_modules",
