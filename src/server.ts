@@ -1,5 +1,5 @@
 import * as grpc from "@grpc/grpc-js";
-import { FluxImageService, FluxImageServer } from "./fluxpb/flux";
+import { FluxImageService, FluxImageServer } from "./fluxpb/ts/flux";
 import resize from "./resize";
 
 const PORT = 50049;

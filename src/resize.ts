@@ -4,7 +4,7 @@ import {
   objectFitToJSON,
   ResizeRequest,
   ResizeResponse,
-} from "./fluxpb/flux";
+} from "./fluxpb/ts/flux";
 import { handleUnaryCall } from "@grpc/grpc-js";
 import sharp, { FitEnum } from "sharp";
 import Color from "color";

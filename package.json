@@ -5,7 +5,6 @@
   "main": "dist/server.js",
   "scripts": {
     "clean": "rm -rf dist && rm -rf src/fluxpb",
-    "proto": "protoc --plugin=$(which protoc-gen-ts_proto) --ts_proto_out=./src/fluxpb --ts_proto_opt=outputServices=grpc-js --ts_proto_opt=esModuleInterop=true -I protos protos/*.proto",
     "build": "esbuild --bundle --outdir=dist src/server.ts --platform=node --external:sharp --external:@grpc/grpc-js --minify --tsconfig=./tsconfig.json",
     "dev": "concurrently --names \"BUNDLE,SERVER\" \"pnpm dev:bundle\" \"pnpm dev:server\"",
     "dev:bundle": "pnpm build --watch",
@@ -33,7 +32,8 @@
     "nodemon": "^3.1.4",
     "prettier": "^3.3.3",
     "tsx": "^4.16.2",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "zx": "^8.1.4"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.10.11",
