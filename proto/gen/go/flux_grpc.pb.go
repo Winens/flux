@@ -4,7 +4,7 @@
 // - protoc             v3.19.6
 // source: flux.proto
 
-package __go
+package _go
 
 import (
 	context "context"

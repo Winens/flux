@@ -1,4 +1,4 @@
-module github.com/winens/flux/proto/gen/go
+module github.com/Winens/flux
 
 go 1.22.5
 
