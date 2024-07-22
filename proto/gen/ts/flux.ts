@@ -10,8 +10,8 @@ import {
   ChannelCredentials,
   Client,
   type ClientOptions,
-  type ClientUnaryCall,
-  type handleUnaryCall,
+  ClientWritableStream,
+  handleClientStreamingCall,
   makeGenericClientConstructor,
   Metadata,
   type ServiceError,
@@ -416,7 +416,7 @@ export type FluxImageService = typeof FluxImageService;
 export const FluxImageService = {
   resize: {
     path: "/flux.FluxImage/Resize",
-    requestStream: false,
+    requestStream: true,
     responseStream: false,
     requestSerialize: (value: ResizeRequest) => Buffer.from(ResizeRequest.encode(value).finish()),
     requestDeserialize: (value: Buffer) => ResizeRequest.decode(value),
@@ -426,25 +426,24 @@ export const FluxImageService = {
 } as const;
 
 export interface FluxImageServer extends UntypedServiceImplementation {
-  resize: handleUnaryCall<ResizeRequest, ResizeResponse>;
+  resize: handleClientStreamingCall<ResizeRequest, ResizeResponse>;
 }
 
 export interface FluxImageClient extends Client {
+  resize(callback: (error: ServiceError | null, response: ResizeResponse) => void): ClientWritableStream<ResizeRequest>;
   resize(
-    request: ResizeRequest,
-    callback: (error: ServiceError | null, response: ResizeResponse) => void,
-  ): ClientUnaryCall;
-  resize(
-    request: ResizeRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: ResizeResponse) => void,
-  ): ClientUnaryCall;
+  ): ClientWritableStream<ResizeRequest>;
   resize(
-    request: ResizeRequest,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: ResizeResponse) => void,
+  ): ClientWritableStream<ResizeRequest>;
+  resize(
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: ResizeResponse) => void,
-  ): ClientUnaryCall;
+  ): ClientWritableStream<ResizeRequest>;
 }
 
 export const FluxImageClient = makeGenericClientConstructor(FluxImageService, "flux.FluxImage") as unknown as {

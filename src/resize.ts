@@ -2,10 +2,11 @@ import {
   ImageType,
   ObjectFit,
   objectFitToJSON,
+  ResizeOptions,
   ResizeRequest,
   ResizeResponse,
 } from "@fluxpb/flux";
-import { handleUnaryCall } from "@grpc/grpc-js";
+import { handleUnaryCall, handleClientStreamingCall } from "@grpc/grpc-js";
 import sharp, { FitEnum } from "sharp";
 import Color from "color";
 
@@ -16,64 +17,81 @@ const DEFAULTS = {
   quality: 80,
 };
 
-type UnaryHandler = handleUnaryCall<ResizeRequest, ResizeResponse>;
+type handler = handleClientStreamingCall<ResizeRequest, ResizeResponse>;
 
-const resize: UnaryHandler = async (call, callback) => {
-  try {
-    const opts = call.request.options;
-    if (!opts) return callback(new Error("No options provided"));
+const resize: handler = (call, callback) => {
+  let buffer = Buffer.from("");
+  let opts: ResizeOptions | undefined;
 
-    // Fallback to default values if not provided
-    if (!opts.width) opts.width = DEFAULTS.width;
-    if (!opts.height) opts.height = DEFAULTS.height;
-    if (!opts.backgroundColor) opts.backgroundColor = DEFAULTS.backgroundColor;
+  call.on("data", (chunk) => {
+    buffer = Buffer.concat([buffer, chunk.imageData]);
 
-    const bgColor = new Color(opts.backgroundColor);
-
-    const fit = objectFitToJSON(
-      opts.objectFit ?? ObjectFit.COVER,
-    ).toLowerCase() as keyof FitEnum;
-
-    const img = sharp(Buffer.from(call.request.imageData)).resize({
-      width: opts.width,
-      height: opts.height,
-      background: bgColor.object(),
-      fit,
-    });
-
-    // Result variable
-    let response: ResizeResponse = {
-      imageData: Buffer.from(""),
-    };
-
-    const quality = opts.quality || DEFAULTS.quality;
-
-    switch (opts.imageType) {
-      case ImageType.WEBP:
-        response.imageData = await img.webp({ quality }).toBuffer();
-        break;
-
-      case ImageType.JPEG:
-        response.imageData = await img.jpeg({ quality }).toBuffer();
-        break;
-
-      case ImageType.PNG:
-        response.imageData = await img.png({ quality }).toBuffer();
-        break;
-
-      case ImageType.AVIF:
-        response.imageData = await img.avif({ quality }).toBuffer();
-        break;
-
-      default:
-        return callback(new Error("Unsupported image type"));
+    if (!opts) {
+      opts = chunk.options;
     }
+  });
 
-    callback(null, response);
-  } catch (err) {
-    console.log(err);
-    callback(err as Error);
-  }
+  call.on("end", async () => {
+    try {
+      if (!opts) return callback(new Error("No options provided"));
+
+      // Fallback to default values if not provided
+      if (!opts.width) opts.width = DEFAULTS.width;
+      if (!opts.height) opts.height = DEFAULTS.height;
+      if (!opts.backgroundColor)
+        opts.backgroundColor = DEFAULTS.backgroundColor;
+
+      const bgColor = new Color(opts.backgroundColor);
+
+      const fit = objectFitToJSON(
+        opts.objectFit ?? ObjectFit.COVER,
+      ).toLowerCase() as keyof FitEnum;
+
+      const img = sharp(buffer).resize({
+        width: opts.width,
+        height: opts.height,
+        background: bgColor.object(),
+        fit,
+      });
+
+      // Result variable
+      let response: ResizeResponse = {
+        imageData: Buffer.from(""),
+      };
+
+      const quality = opts.quality || DEFAULTS.quality;
+
+      switch (opts.imageType) {
+        case ImageType.WEBP:
+          response.imageData = await img.webp({ quality }).toBuffer();
+          break;
+
+        case ImageType.JPEG:
+          response.imageData = await img.jpeg({ quality }).toBuffer();
+          break;
+
+        case ImageType.PNG:
+          response.imageData = await img.png({ quality }).toBuffer();
+          break;
+
+        case ImageType.AVIF:
+          response.imageData = await img.avif({ quality }).toBuffer();
+          break;
+
+        default:
+          return callback(new Error("Unsupported image type"));
+      }
+
+      callback(null, response);
+    } catch (err) {
+      console.log(err);
+      callback(err as Error);
+    }
+  });
+
+  call.on("error", (err) => {
+    callback(err);
+  });
 };
 
 export default resize;

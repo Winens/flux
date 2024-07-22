@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FluxImageClient interface {
-	Resize(ctx context.Context, in *ResizeRequest, opts ...grpc.CallOption) (*ResizeResponse, error)
+	Resize(ctx context.Context, opts ...grpc.CallOption) (FluxImage_ResizeClient, error)
 }
 
 type fluxImageClient struct {
@@ -33,20 +33,45 @@ func NewFluxImageClient(cc grpc.ClientConnInterface) FluxImageClient {
 	return &fluxImageClient{cc}
 }
 
-func (c *fluxImageClient) Resize(ctx context.Context, in *ResizeRequest, opts ...grpc.CallOption) (*ResizeResponse, error) {
-	out := new(ResizeResponse)
-	err := c.cc.Invoke(ctx, "/flux.FluxImage/Resize", in, out, opts...)
+func (c *fluxImageClient) Resize(ctx context.Context, opts ...grpc.CallOption) (FluxImage_ResizeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &FluxImage_ServiceDesc.Streams[0], "/flux.FluxImage/Resize", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &fluxImageResizeClient{stream}
+	return x, nil
+}
+
+type FluxImage_ResizeClient interface {
+	Send(*ResizeRequest) error
+	CloseAndRecv() (*ResizeResponse, error)
+	grpc.ClientStream
+}
+
+type fluxImageResizeClient struct {
+	grpc.ClientStream
+}
+
+func (x *fluxImageResizeClient) Send(m *ResizeRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *fluxImageResizeClient) CloseAndRecv() (*ResizeResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(ResizeResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // FluxImageServer is the server API for FluxImage service.
 // All implementations must embed UnimplementedFluxImageServer
 // for forward compatibility
 type FluxImageServer interface {
-	Resize(context.Context, *ResizeRequest) (*ResizeResponse, error)
+	Resize(FluxImage_ResizeServer) error
 	mustEmbedUnimplementedFluxImageServer()
 }
 
@@ -54,8 +79,8 @@ type FluxImageServer interface {
 type UnimplementedFluxImageServer struct {
 }
 
-func (UnimplementedFluxImageServer) Resize(context.Context, *ResizeRequest) (*ResizeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Resize not implemented")
+func (UnimplementedFluxImageServer) Resize(FluxImage_ResizeServer) error {
+	return status.Errorf(codes.Unimplemented, "method Resize not implemented")
 }
 func (UnimplementedFluxImageServer) mustEmbedUnimplementedFluxImageServer() {}
 
@@ -70,22 +95,30 @@ func RegisterFluxImageServer(s grpc.ServiceRegistrar, srv FluxImageServer) {
 	s.RegisterService(&FluxImage_ServiceDesc, srv)
 }
 
-func _FluxImage_Resize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResizeRequest)
-	if err := dec(in); err != nil {
+func _FluxImage_Resize_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(FluxImageServer).Resize(&fluxImageResizeServer{stream})
+}
+
+type FluxImage_ResizeServer interface {
+	SendAndClose(*ResizeResponse) error
+	Recv() (*ResizeRequest, error)
+	grpc.ServerStream
+}
+
+type fluxImageResizeServer struct {
+	grpc.ServerStream
+}
+
+func (x *fluxImageResizeServer) SendAndClose(m *ResizeResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *fluxImageResizeServer) Recv() (*ResizeRequest, error) {
+	m := new(ResizeRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(FluxImageServer).Resize(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/flux.FluxImage/Resize",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FluxImageServer).Resize(ctx, req.(*ResizeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return m, nil
 }
 
 // FluxImage_ServiceDesc is the grpc.ServiceDesc for FluxImage service.
@@ -94,12 +127,13 @@ func _FluxImage_Resize_Handler(srv interface{}, ctx context.Context, dec func(in
 var FluxImage_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "flux.FluxImage",
 	HandlerType: (*FluxImageServer)(nil),
-	Methods: []grpc.MethodDesc{
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "Resize",
-			Handler:    _FluxImage_Resize_Handler,
+			StreamName:    "Resize",
+			Handler:       _FluxImage_Resize_Handler,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "flux.proto",
 }

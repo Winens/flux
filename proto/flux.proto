@@ -5,7 +5,7 @@ package flux;
 option go_package = "github.com/Winens/flux/proto/gen/go";
 
 service FluxImage {
-  rpc Resize(ResizeRequest) returns (ResizeResponse);
+  rpc Resize(stream ResizeRequest) returns (ResizeResponse);
 }
 
 
