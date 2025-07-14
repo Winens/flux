@@ -1,0 +1,24 @@
+{
+  "name": "flux",
+  "module": "server.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "bun build server.ts --outdir dist --target bun"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/express": "^5.0.3",
+    "@types/multer": "^2.0.0",
+    "@types/sharp": "^0.32.0",
+    "prettier": "^3.6.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.1",
+    "sharp": "^0.34.2"
+  }
+}
